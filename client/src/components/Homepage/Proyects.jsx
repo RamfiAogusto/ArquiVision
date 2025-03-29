@@ -14,7 +14,7 @@ const Proyects = () => {
             try {
                 const parsedProjects = JSON.parse(cachedProjects);
                 console.log("Cargando proyectos destacados desde caché:", parsedProjects.length);
-                setProjects(parsedProjects);
+                setProjects(parsedProjects); // Ya vienen ordenados de sessionStorage
                 setIsLoading(false);
                 return;
             } catch (err) {
@@ -27,6 +27,21 @@ const Proyects = () => {
         fetchProjects();
     }, []);
     
+    // Función para ordenar proyectos por order_position
+    const sortProjectsByOrderPosition = (projectsArray) => {
+        return [...projectsArray].sort((a, b) => {
+            // Si ambos tienen order_position, ordenar por ese valor (ascendente)
+            if (a.order_position !== null && b.order_position !== null) {
+                return a.order_position - b.order_position;
+            }
+            // Si solo uno tiene order_position, ese va primero
+            if (a.order_position !== null) return -1;
+            if (b.order_position !== null) return 1;
+            // Si ninguno tiene order_position, ordenar por fecha de creación (más reciente primero)
+            return new Date(b.created_at) - new Date(a.created_at);
+        });
+    };
+    
     // Función para cargar proyectos desde la API
     const fetchProjects = async () => {
         try {
@@ -36,10 +51,13 @@ const Proyects = () => {
                 throw new Error("Error al obtener proyectos");
             }
             const data = await response.json();
-            setProjects(data);
+            
+            // Ordenar los proyectos por order_position
+            const sortedProjects = sortProjectsByOrderPosition(data);
+            setProjects(sortedProjects);
             
             // Guardar los proyectos en sessionStorage para futuras visitas
-            sessionStorage.setItem('cachedProjects', JSON.stringify(data));
+            sessionStorage.setItem('cachedProjects', JSON.stringify(sortedProjects));
         } catch (error) {
             console.error("Error:", error);
         } finally {

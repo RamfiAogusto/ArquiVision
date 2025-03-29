@@ -1,7 +1,8 @@
 const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
-const projectRoutes = require('./routes/projects.js');
+const projectRoutes = require('./routes/projects');
+const morgan = require('morgan');
 
 dotenv.config();
 
@@ -18,6 +19,7 @@ app.use((req, res, next) => {
 
 // Middlewares
 app.use(cors());
+app.use(morgan('dev'));
 
 // Modificar estos middlewares para que NO procesen formularios multipart
 app.use(express.json({ limit: '1mb' }));
@@ -40,6 +42,7 @@ app.use((req, res, next) => {
     req._body = false; // Indicar que el body aún no ha sido procesado
   }
   next();
+  
 });
 
 // Rutas - Añadir un middleware para loggear antes de llegar a las rutas
@@ -55,6 +58,11 @@ app.post('/vivo', (req, res) => {
     res.send('Hello from vivo');
 });
 
+// Ruta de prueba para verificar que el servidor funciona
+app.get('/test', (req, res) => {
+    res.json({ message: 'El servidor está funcionando correctamente' });
+});
+
 // Manejador de errores
 app.use((err, req, res, next) => {
     console.error('❌ [INDEX.JS] Error no capturado:', err);
@@ -66,6 +74,10 @@ app.use((err, req, res, next) => {
 const PORT = process.env.PORT || 8080;
 app.listen(PORT, () => {
     console.log(`✅ Servidor ejecutándose en puerto ${PORT}`);
+    console.log('Rutas registradas:');
+    console.log(' - GET /projects');
+    console.log(' - POST /projects/reorder');
+    // Otras rutas...
 });
 
 

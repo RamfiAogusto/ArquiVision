@@ -54,6 +54,13 @@ const createProject = async (req, res) => {
             });
         }
 
+        // Obtener el número total de proyectos para asignar la siguiente posición
+        const { count, error: countError } = await supabase
+            .from('projects')
+            .select('*', { count: 'exact', head: true });
+            
+        if (countError) throw countError;
+        
         console.log("📁 [CONTROLLER] Llamando a createNewProject con imágenes:", images.length);
         const result = await createNewProject(
             name,
@@ -65,8 +72,25 @@ const createProject = async (req, res) => {
             images
         );
 
+        // Crear el proyecto con order_position al final
+        const { data, error } = await supabase
+            .from('projects')
+            .insert({
+                name,
+                description,
+                location,
+                size: parseInt(size),
+                intention,
+                client,
+                images: result.images,
+                order_position: count
+            })
+            .select();
+
+        if (error) throw error;
+
         console.log("✅ [CONTROLLER] Proyecto creado exitosamente");
-        res.status(201).json(result);
+        res.status(201).json(data[0]);
     } catch (error) {
         console.error('❌ Error en createProject:', error);
         res.status(500).json({ error: error.message });
