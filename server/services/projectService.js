@@ -1,51 +1,42 @@
 const supabase = require("../supabaseClient.js");
 const { v4: uuidv4 } = require('uuid');
+const path = require('path');
 
-const uploadImage = async (file) => {
+const uploadImage = async (image) => {
     try {
-        console.log("Iniciando carga de imagen:", file.originalname);
+        // Asegurarse de que tenemos un buffer
+        const imageBuffer = image.buffer;
+        const originalName = image.originalname || 'image.jpg';
         
-        // Verificar que el archivo existe y tiene el formato correcto
-        if (!file || !file.buffer) {
-            throw new Error('Archivo inválido');
-        }
-
-        // Convertir el buffer de multer a un Blob
-        const blob = new Blob([file.buffer], { type: file.mimetype });
+        // Generar un nombre único para la imagen
+        const timestamp = new Date().getTime();
+        const randomString = Math.random().toString(36).substring(2, 15);
+        const fileName = `${timestamp}-${randomString}-${originalName}`;
         
-        // Generar nombre único para el archivo
-        const fileExt = file.originalname.split('.').pop();
-        const fileName = `${uuidv4()}.${fileExt}`;
-        const filePath = `${fileName}`;
-
-        console.log("Intentando subir archivo a Supabase:", filePath);
-
-        // Subir a Supabase Storage
+        console.log(`🖼️ Subiendo imagen: ${fileName}`);
+        
+        // Subir la imagen a Supabase
         const { data, error } = await supabase.storage
             .from('projects')
-            .upload(filePath, blob, {
-                contentType: file.mimetype,
-                cacheControl: '3600'
+            .upload(fileName, imageBuffer, {
+                contentType: image.mimetype || 'image/jpeg'
             });
-
+            
         if (error) {
-            console.error('Error en Supabase Storage:', error);
+            console.error('❌ Error al subir a Supabase:', error);
             throw error;
         }
-
-        console.log("Archivo subido exitosamente:", data);
-
+        
         // Obtener la URL pública
-        const { data: publicUrlData } = supabase.storage
+        const { data: urlData } = await supabase.storage
             .from('projects')
-            .getPublicUrl(filePath);
-
-        console.log("URL pública generada:", publicUrlData.publicUrl);
-
-        return publicUrlData.publicUrl;
+            .getPublicUrl(fileName);
+            
+        console.log(`✅ Imagen subida correctamente: ${urlData.publicUrl}`);
+        return urlData.publicUrl;
     } catch (error) {
-        console.error('Error detallado en uploadImage:', error);
-        throw error;
+        console.error('❌ Error en uploadImage:', error);
+        throw new Error(`Error al subir imagen: ${error.message}`);
     }
 };
 
@@ -68,6 +59,7 @@ const fetchProjectById = async (id) => {
 const createNewProject = async (name, description, location, size, intention, client, images = []) => {
     try {
         console.log("Iniciando creación de proyecto con imágenes:", images.length);
+        console.log("Valores recibidos:", { name, description, location, size, intention, client });
 
         // Subir todas las imágenes y obtener sus URLs
         const imageUrls = await Promise.all(
@@ -76,6 +68,9 @@ const createNewProject = async (name, description, location, size, intention, cl
 
         console.log("URLs de imágenes generadas:", imageUrls);
 
+        // Asegurarse de que intention sea un string, no un array
+        const intentionValue = Array.isArray(intention) ? intention[0] : intention;
+        
         // Crear el proyecto con las URLs de las imágenes
         const { data, error } = await supabase
             .from('projects')
@@ -84,7 +79,7 @@ const createNewProject = async (name, description, location, size, intention, cl
                 description,
                 location,
                 size: parseInt(size),
-                intention,
+                intention: intentionValue,  // Usar el valor extraído
                 client,
                 images: imageUrls
             }])
@@ -112,9 +107,30 @@ const removeProject = async (id) => {
     return data;
 };
 
+const getAllProjects = async () => {
+    try {
+        console.log("🔍 Consultando todos los proyectos en Supabase");
+        const { data, error } = await supabase
+            .from('projects')
+            .select('*');
+            
+        if (error) {
+            console.error('Error al obtener proyectos:', error);
+            throw error;
+        }
+        
+        console.log(`✅ Proyectos recuperados exitosamente: ${data.length}`);
+        return data;
+    } catch (error) {
+        console.error('Error detallado en getAllProjects:', error);
+        throw error;
+    }
+};
+
 module.exports = {
     fetchAllProjects,
     fetchProjectById,
     createNewProject,
     removeProject,
+    getAllProjects,
 };

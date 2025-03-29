@@ -1,7 +1,9 @@
-import React, { useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { useNavigate, Link, useParams } from "react-router-dom";
 
-function AddProject() {
+function EditProject() {
+    const { id } = useParams();
+    const navigate = useNavigate();
     const [name, setName] = useState("");
     const [description, setDescription] = useState("");
     const [location, setLocation] = useState("");
@@ -10,7 +12,7 @@ function AddProject() {
     const [client, setClient] = useState("");
     const [images, setImages] = useState([]);
     const [previewUrls, setPreviewUrls] = useState([]);
-    const navigate = useNavigate();
+    const [currentImages, setCurrentImages] = useState([]);
 
     // Valores permitidos para el ENUM intention
     const intentionOptions = [
@@ -21,67 +23,79 @@ function AddProject() {
         "RECREACIONAL"
     ];
 
+    useEffect(() => {
+        const fetchProject = async () => {
+            try {
+                const response = await fetch(`http://localhost:8080/projects/${id}`);
+                const data = await response.json();
+                
+                setName(data.name);
+                setDescription(data.description);
+                setLocation(data.location);
+                setSize(data.size.toString());
+                setIntention(data.intention);
+                setClient(data.client);
+                setCurrentImages(data.images || []);
+                setPreviewUrls(data.images || []);
+            } catch (error) {
+                console.error("Error al cargar el proyecto:", error);
+                navigate("/admin/manage/proyectos");
+            }
+        };
+
+        fetchProject();
+    }, [id]);
+
     const handleImageChange = (e) => {
         const files = Array.from(e.target.files);
         setImages(files);
         
         // Crear previsualizaciones
         const urls = files.map(file => URL.createObjectURL(file));
-        setPreviewUrls(urls);
+        setPreviewUrls([...currentImages, ...urls]);
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        const formData = new FormData();
         
+        // Agregar datos del proyecto
+        formData.append('name', name);
+        formData.append('description', description);
+        formData.append('location', location);
+        formData.append('size', size);
+        formData.append('intention', intention);
+        formData.append('client', client);
+        formData.append('currentImages', JSON.stringify(currentImages));
+        
+        // Agregar imágenes nuevas
+        images.forEach((image) => {
+            formData.append('images', image);
+        });
+
         try {
-            const formData = new FormData();
-            
-            // Agregar datos del proyecto
-            formData.append('name', name);
-            formData.append('description', description);
-            formData.append('location', location);
-            formData.append('size', size);
-            formData.append('intention', intention);
-            formData.append('client', client);
-            
-            // Verificar que hay imágenes para enviar
-            console.log("Número de imágenes a enviar:", images.length);
-            
-            // Agregar imágenes
-            for (const image of images) {
-                console.log("Añadiendo imagen:", image.name, "Tamaño:", (image.size/1024).toFixed(2), "KB");
-                formData.append('images', image);
-            }
-
-            console.log("Enviando datos:", {
-                name, description, location, size, intention, client,
-                imageCount: images.length
-            });
-
-            // Enviar la petición
-            const response = await fetch("http://localhost:8080/projects", {
-                method: "POST",
+            const response = await fetch(`http://localhost:8080/projects/${id}`, {
+                method: "PUT",
                 body: formData,
-                // No incluir Content-Type aquí
             });
-
-            if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(JSON.stringify(errorData));
-            }
 
             const data = await response.json();
-            console.log("Proyecto creado exitosamente:", data);
+
+            if (!response.ok) {
+                throw new Error(data.error || "Error updating project");
+            }
+
+            console.log("Proyecto actualizado exitosamente:", data);
             navigate("/admin/manage/proyectos");
         } catch (error) {
-            console.error("Error:", error);
+            console.error("Error detallado:", error);
             alert(`Error: ${error.message}`);
         }
     };
 
     return (
-        <div className="px-24 py-10 bg-gray-100 min-h-screen flex flex-col items-center w-full ">
-            <h2 className="text-3xl font-bold mb-6">Crear un nuevo proyecto</h2>
+        <div className="px-24 py-10 bg-gray-100 min-h-screen flex flex-col items-center w-full">
+            <h2 className="text-3xl font-bold mb-6">Editar proyecto</h2>
             <form onSubmit={handleSubmit} className="space-y-4 sm:w-96">
                 <div>
                     <label className="block text-sm font-medium">
@@ -160,7 +174,32 @@ function AddProject() {
                 </div>
                 <div className="mb-4">
                     <label className="block text-sm font-medium">
-                        Imágenes del Proyecto
+                        Imágenes Actuales
+                    </label>
+                    <div className="mt-2 flex gap-2 flex-wrap">
+                        {currentImages.map((url, index) => (
+                            <div key={index} className="relative">
+                                <img
+                                    src={url}
+                                    alt={`Current ${index + 1}`}
+                                    className="w-24 h-24 object-cover rounded"
+                                />
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        setCurrentImages(currentImages.filter((_, i) => i !== index));
+                                        setPreviewUrls(previewUrls.filter((_, i) => i !== index));
+                                    }}
+                                    className="absolute top-0 right-0 bg-red-500 text-white rounded-full p-1 text-sm"
+                                >
+                                    ×
+                                </button>
+                            </div>
+                        ))}
+                    </div>
+                    
+                    <label className="block text-sm font-medium mt-4">
+                        Agregar Nuevas Imágenes
                     </label>
                     <input
                         type="file"
@@ -169,28 +208,17 @@ function AddProject() {
                         onChange={handleImageChange}
                         className="p-2 border rounded w-full"
                     />
-                    
-                    {/* Previsualización de imágenes */}
-                    <div className="mt-2 flex gap-2 flex-wrap">
-                        {previewUrls.map((url, index) => (
-                            <img
-                                key={index}
-                                src={url}
-                                alt={`Preview ${index + 1}`}
-                                className="w-24 h-24 object-cover rounded"
-                            />
-                        ))}
-                    </div>
                 </div>
+                
                 <div className="flex justify-between">
-                    <Link to={"/admin/Manage/Proyectos"} className="bg-red-500 px-4 py-2 rounded text-white">
+                    <Link to="/admin/Manage/Proyectos" className="bg-red-500 px-4 py-2 rounded text-white">
                         Cancelar
                     </Link>
                     <button
                         type="submit"
                         className="px-4 py-2 bg-blue-600 text-white rounded"
                     >
-                        Añadir Proyecto
+                        Guardar Cambios
                     </button>
                 </div>
             </form>
@@ -198,4 +226,4 @@ function AddProject() {
     );
 }
 
-export default AddProject;
+export default EditProject; 
