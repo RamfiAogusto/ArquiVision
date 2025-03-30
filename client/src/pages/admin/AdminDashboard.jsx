@@ -4,7 +4,15 @@ import Nav from "../../components/admin/Nav";
 import QuickActions from "../../components/admin/dashboard/QuickActions";
 import ResentActivity from "../../components/admin/dashboard/ResentActivity";
 import Shortcut from "../../components/admin/dashboard/Shortcut";
+import { useProjects } from "../../contexts/ProjectContext";
+
 function AdminDashboard() {
+    // Usar el contexto de proyectos
+    const { projects, loading } = useProjects();
+    
+    // Número total de proyectos
+    const totalProyectos = Array.isArray(projects) ? projects.length : 0;
+    
     return (
         <div className="p-6 bg-gray-100 min-h-screen">
             <Nav />
@@ -28,7 +36,7 @@ function AdminDashboard() {
                         <p className="">Resumen estadistico</p>
                         <div className="flex items-end">
                             <h2 className="text-gray-900 title-font text-5xl font-medium mb-2">
-                                34
+                                {loading ? "..." : totalProyectos}
                             </h2>
                             <svg
                                 fill=""

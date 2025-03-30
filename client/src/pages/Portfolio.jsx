@@ -4,9 +4,10 @@ import Nav from "../components/Nav";
 import Footer from "../components/Homepage/Footer";
 import ProyectL from "../components/PortfolioPage/ProyectL";
 import GalleryProyects from "../components/PortfolioPage/GalleryProyects";
+import { useProjects } from "../contexts/ProjectContext";
 
 const Portfolio = () => {
-    const [projects, setProjects] = useState([]);
+    const { projects, loading } = useProjects();
     const [isLoading, setIsLoading] = useState(true);
     
     useEffect(() => {

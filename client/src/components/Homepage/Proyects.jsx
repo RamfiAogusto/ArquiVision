@@ -1,71 +1,12 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 import Proyect from "./Proyect";
 import ProyectL from "./ProyectL";
+import { useProjects } from "../../contexts/ProjectContext";
 
 const Proyects = () => {
-    const [projects, setProjects] = useState([]);
-    const [isLoading, setIsLoading] = useState(true);
+    const { projects, loading } = useProjects();
     
-    useEffect(() => {
-        // Intentar primero cargar los proyectos desde sessionStorage
-        const cachedProjects = sessionStorage.getItem('cachedProjects');
-        
-        if (cachedProjects) {
-            try {
-                const parsedProjects = JSON.parse(cachedProjects);
-                console.log("Cargando proyectos destacados desde caché:", parsedProjects.length);
-                setProjects(parsedProjects); // Ya vienen ordenados de sessionStorage
-                setIsLoading(false);
-                return;
-            } catch (err) {
-                console.error("Error al cargar proyectos desde caché:", err);
-                // Continuar con la carga normal si hay error
-            }
-        }
-        
-        // Si no hay caché o hubo error, cargar desde la API
-        fetchProjects();
-    }, []);
-    
-    // Función para ordenar proyectos por order_position
-    const sortProjectsByOrderPosition = (projectsArray) => {
-        return [...projectsArray].sort((a, b) => {
-            // Si ambos tienen order_position, ordenar por ese valor (ascendente)
-            if (a.order_position !== null && b.order_position !== null) {
-                return a.order_position - b.order_position;
-            }
-            // Si solo uno tiene order_position, ese va primero
-            if (a.order_position !== null) return -1;
-            if (b.order_position !== null) return 1;
-            // Si ninguno tiene order_position, ordenar por fecha de creación (más reciente primero)
-            return new Date(b.created_at) - new Date(a.created_at);
-        });
-    };
-    
-    // Función para cargar proyectos desde la API
-    const fetchProjects = async () => {
-        try {
-            setIsLoading(true);
-            const response = await fetch("http://localhost:8080/projects");
-            if (!response.ok) {
-                throw new Error("Error al obtener proyectos");
-            }
-            const data = await response.json();
-            
-            // Ordenar los proyectos por order_position
-            const sortedProjects = sortProjectsByOrderPosition(data);
-            setProjects(sortedProjects);
-            
-            // Guardar los proyectos en sessionStorage para futuras visitas
-            sessionStorage.setItem('cachedProjects', JSON.stringify(sortedProjects));
-        } catch (error) {
-            console.error("Error:", error);
-        } finally {
-            setIsLoading(false);
-        }
-    };
-    
-    if (isLoading) {
+    if (loading) {
         return (
             <div className="flex justify-center items-center py-24">
                 <p className="text-xl">Cargando proyectos destacados...</p>

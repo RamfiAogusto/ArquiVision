@@ -16,23 +16,30 @@ import ManageTeam from "./pages/admin/ManageTeam";
 import AddProyect from "./pages/admin/AddProyect";
 import EditProyect from "./pages/admin/EditProyect";
 
+// Importar el ProjectProvider
+import { ProjectProvider } from './contexts/ProjectContext'
+
 ReactDOM.createRoot(document.getElementById("root")).render(
-    <BrowserRouter>
-        <Routes>
-            <Route path="/" element={<Home />}></Route>
-            <Route path="/Servicios" element={<Services />} />
-            <Route path="/Portafolio" element={<Portfolio />} />
-            <Route path="/Portafolio/:id" element={<ProyectDetail />} />
-            <Route path="/Nosotros" element={<Us />} />
-            <Route path="/Contactos" element={<Contacts />} />
-            {/* --------ADMIN------- */}
-            <Route path="/admin/login" element={<AdminLogin />} />
-            <Route path="/admin/Dashboard" element={<AdminDashboard />} />
-            <Route path="/admin/Manage/Proyectos" element={<ManageProyects />} />
-            <Route path="/admin/Manage/Equipo"  element={<ManageTeam />} />
-            <Route path="/admin/manage/proyectos/new"  element={<AddProyect />} />
-            <Route path="/admin/manage/proyectos/edit/:id" element={<EditProyect />} />
-            <Route path="*" element={<h1>PAGE NOT FOUND</h1>} />
-        </Routes>
-    </BrowserRouter>
+    <React.StrictMode>
+        <ProjectProvider>
+            <BrowserRouter>
+                <Routes>
+                    <Route path="/" element={<Home />}></Route>
+                    <Route path="/Servicios" element={<Services />} />
+                    <Route path="/Portafolio" element={<Portfolio />} />
+                    <Route path="/Portafolio/:id" element={<ProyectDetail />} />
+                    <Route path="/Nosotros" element={<Us />} />
+                    <Route path="/Contactos" element={<Contacts />} />
+                    {/* --------ADMIN------- */}
+                    <Route path="/admin/login" element={<AdminLogin />} />
+                    <Route path="/admin/Dashboard" element={<AdminDashboard />} />
+                    <Route path="/admin/Manage/Proyectos" element={<ManageProyects />} />
+                    <Route path="/admin/Manage/Equipo"  element={<ManageTeam />} />
+                    <Route path="/admin/manage/proyectos/new"  element={<AddProyect />} />
+                    <Route path="/admin/manage/proyectos/edit/:id" element={<EditProyect />} />
+                    <Route path="*" element={<h1>PAGE NOT FOUND</h1>} />
+                </Routes>
+            </BrowserRouter>
+        </ProjectProvider>
+    </React.StrictMode>
 );
