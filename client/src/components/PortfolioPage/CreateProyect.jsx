@@ -182,7 +182,7 @@ const CreateProyect = () => {
 
             await refreshProjects();
             console.log("Proyecto creado con éxito");
-            navigate('/portafolio');
+            navigate('/admin/manage/proyectos');
         } catch (err) {
             console.error("Error al crear proyecto:", err);
             setError(err.message);
@@ -482,7 +482,7 @@ const CreateProyect = () => {
                     <Button
                         type="button"
                         variant="outline"
-                        onClick={() => navigate('/portafolio')}
+                        onClick={() => navigate('/admin/manage/proyectos')}
                     >
                         Cancelar
                     </Button>

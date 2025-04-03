@@ -228,7 +228,7 @@ const EditProyect = () => {
 
             console.log("Proyecto actualizado correctamente");
             await refreshProjects();
-            navigate('/portafolio');
+            navigate('/admin/manage/proyectos');
         } catch (err) {
             console.error("Error al actualizar proyecto:", err);
             setError(err.message);
@@ -250,7 +250,7 @@ const EditProyect = () => {
                 Error: {error}
             </div>
             <Button 
-                onClick={() => navigate('/portafolio')}
+                onClick={() => navigate('/admin/manage/proyectos')}
                 className="mt-4"
                 variant="outline"
             >
@@ -265,7 +265,7 @@ const EditProyect = () => {
                 Proyecto no encontrado
             </div>
             <Button 
-                onClick={() => navigate('/portafolio')}
+                onClick={() => navigate('/admin/manage/proyectos')}
                 className="mt-4"
                 variant="outline"
             >
@@ -598,7 +598,7 @@ const EditProyect = () => {
                     <Button
                         type="button"
                         variant="outline"
-                        onClick={() => navigate('/portafolio')}
+                        onClick={() => navigate('/admin/manage/proyectos')}
                     >
                         Cancelar
                     </Button>
