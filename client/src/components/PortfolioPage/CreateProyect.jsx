@@ -15,9 +15,8 @@ const CreateProyect = () => {
     const [formData, setFormData] = useState({
         title: "",
         description: "",
-        category: "",
+        category: "RESIDENCIAL",
         status: "active",
-        order_position: 0,
         client: "",
         location: "",
         area: "",
@@ -129,18 +128,19 @@ const CreateProyect = () => {
             // Convertir attributes y links a JSON string para almacenarlos en 'metadata'
             const metadata = {
                 attributes: attributes,
-                links: links
+                links: links,
+                area: formData.area || ""
             };
 
             // Crear un objeto con solo los campos básicos que existen en la tabla projects
             const basicProjectData = {
                 title: formData.title,
+                name: formData.title,
                 description: formData.description,
-                category: formData.category,
+                intention: formData.category,
                 status: formData.status,
-                order_position: parseInt(formData.order_position) || 0,
                 images: [],
-                metadata: JSON.stringify(metadata), // Guardar attributes y links como JSON en un campo metadata
+                metadata: JSON.stringify(metadata), // Guardar attributes, links y area como JSON en un campo metadata
                 created_at: new Date().toISOString(),
                 updated_at: new Date().toISOString()
             };
@@ -148,7 +148,6 @@ const CreateProyect = () => {
             // Opcionalmente añadir campos adicionales si están configurados en la base de datos
             if (formData.client) basicProjectData.client = formData.client;
             if (formData.location) basicProjectData.location = formData.location;
-            if (formData.area) basicProjectData.area = formData.area;
 
             console.log("Datos a enviar a Supabase:", basicProjectData);
             
@@ -167,7 +166,7 @@ const CreateProyect = () => {
 
                 console.log("Subiendo imagen:", filePath);
                 const { error: uploadError } = await supabase.storage
-                    .from('project-images')
+                    .from('projects')
                     .upload(filePath, file);
 
                 if (uploadError) {
@@ -176,7 +175,7 @@ const CreateProyect = () => {
                 }
 
                 const { data: { publicUrl } } = supabase.storage
-                    .from('project-images')
+                    .from('projects')
                     .getPublicUrl(filePath);
 
                 imageUrls.push(publicUrl);
@@ -253,12 +252,11 @@ const CreateProyect = () => {
                                         className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                                         required
                                     >
-                                        <option value="">Seleccionar categoría</option>
-                                        <option value="Residencial">Residencial</option>
-                                        <option value="Comercial">Comercial</option>
-                                        <option value="Industrial">Industrial</option>
-                                        <option value="Urbano">Urbano</option>
-                                        <option value="Concepto">Concepto</option>
+                                        <option value="RESIDENCIAL">Residencial</option>
+                                        <option value="COMERCIAL">Comercial</option>
+                                        <option value="INDUSTRIAL">Industrial</option>
+                                        <option value="INSTITUCIONAL">Institucional</option>
+                                        <option value="RECREACIONAL">Recreacional</option>
                                     </select>
                                 </div>
                                 
@@ -293,19 +291,6 @@ const CreateProyect = () => {
                                 </div>
                                 
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">Posición de Orden</label>
-                                    <Input
-                                        type="number"
-                                        name="order_position"
-                                        value={formData.order_position || ''}
-                                        onChange={handleChange}
-                                        placeholder="0"
-                                    />
-                                </div>
-                            </div>
-                            
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-1">Ubicación</label>
                                     <Input
                                         type="text"
@@ -315,7 +300,9 @@ const CreateProyect = () => {
                                         placeholder="Ciudad, País"
                                     />
                                 </div>
-                                
+                            </div>
+                            
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-1">Área del proyecto</label>
                                     <div className="flex">

@@ -36,20 +36,51 @@ export const getProjectById = async (id) => {
 }
 
 export const createProject = async (projectData) => {
+  // Eliminar los campos area y order_position si existen como propiedades directas
+  const { area, order_position, ...cleanProjectData } = projectData;
+  
+  // Obtener el máximo order_position actual
+  const { data: maxOrderData, error: maxOrderError } = await supabase
+    .from('projects')
+    .select('order_position')
+    .order('order_position', { ascending: false })
+    .limit(1);
+    
+  if (maxOrderError) {
+    console.error('Error al obtener máximo order_position:', maxOrderError);
+    throw maxOrderError;
+  }
+  
+  // Calcular el nuevo order_position (máximo actual + 1 o 0 si no hay proyectos)
+  const newOrderPosition = maxOrderData && maxOrderData.length > 0 
+    ? (maxOrderData[0].order_position || 0) + 1 
+    : 0;
+  
+  // Añadir el order_position calculado automáticamente
+  const dataToInsert = {
+    ...cleanProjectData,
+    order_position: newOrderPosition
+  };
+  
+  console.log('Creando proyecto con order_position automático:', newOrderPosition);
+  
   const { data, error } = await supabase
     .from('projects')
-    .insert([projectData])
+    .insert([dataToInsert])
     .select()
-    .single()
+    .single();
   
-  if (error) throw error
-  return data
+  if (error) throw error;
+  return data;
 }
 
 export const updateProject = async (id, projectData) => {
+  // Eliminar el campo area si existe como propiedad directa
+  const { area, ...cleanProjectData } = projectData;
+  
   const { data, error } = await supabase
     .from('projects')
-    .update(projectData)
+    .update(cleanProjectData)
     .eq('id', id)
     .select()
     .single()

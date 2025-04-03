@@ -45,18 +45,6 @@ const EditProyect = () => {
                 if (error) throw error;
 
                 setProject(data);
-                setFormData({
-                    title: data.title || "",
-                    description: data.description || "",
-                    category: data.category || "",
-                    status: data.status || "active",
-                    order_position: data.order_position || 0,
-                    client: data.client || "",
-                    location: data.location || "",
-                    area: data.area || "",
-                    images: []
-                });
-                
                 // Parsear metadata para obtener atributos y enlaces
                 let parsedMetadata = {};
                 try {
@@ -81,6 +69,21 @@ const EditProyect = () => {
                 } else if (data.links && Array.isArray(data.links)) {
                     setLinks(data.links);
                 }
+                
+                // Cargar área desde metadata si existe
+                const areaFromMetadata = parsedMetadata.area || data.area || "";
+                
+                setFormData({
+                    title: data.title || "",
+                    description: data.description || "",
+                    category: data.category || "",
+                    status: data.status || "active",
+                    order_position: data.order_position || 0,
+                    client: data.client || "",
+                    location: data.location || "",
+                    area: areaFromMetadata,
+                    images: []
+                });
                 
                 // Establecer imágenes existentes
                 if (data.images && Array.isArray(data.images)) {
@@ -226,16 +229,16 @@ const EditProyect = () => {
                 .update({
                     title: formData.title,
                     description: formData.description,
-                    category: formData.category,
+                    intention: formData.category,
                     status: formData.status,
                     order_position: parseInt(formData.order_position) || 0,
                     client: formData.client,
                     location: formData.location,
-                    area: formData.area,
                     images: imageUrls,
                     metadata: JSON.stringify({
                         attributes: attributes,
-                        links: links
+                        links: links,
+                        area: formData.area || ""
                     }),
                     updated_at: new Date().toISOString()
                 })
@@ -342,11 +345,11 @@ const EditProyect = () => {
                                         required
                                     >
                                         <option value="">Seleccionar categoría</option>
-                                        <option value="Residencial">Residencial</option>
-                                        <option value="Comercial">Comercial</option>
-                                        <option value="Industrial">Industrial</option>
-                                        <option value="Urbano">Urbano</option>
-                                        <option value="Concepto">Concepto</option>
+                                        <option value="RESIDENCIAL">Residencial</option>
+                                        <option value="COMERCIAL">Comercial</option>
+                                        <option value="INDUSTRIAL">Industrial</option>
+                                        <option value="INSTITUCIONAL">Institucional</option>
+                                        <option value="RECREACIONAL">Recreacional</option>
                                     </select>
                                 </div>
                                 
