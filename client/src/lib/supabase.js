@@ -7,12 +7,20 @@ export const supabase = createClient(supabaseUrl, supabaseKey)
 
 // Funciones de proyectos
 export const getProjects = async () => {
+  console.log('🔍 Iniciando getProjects en supabase.js');
   const { data, error } = await supabase
     .from('projects')
     .select('*')
     .order('order_position', { ascending: true })
   
-  if (error) throw error
+  if (error) {
+    console.error('❌ Error en getProjects:', error);
+    throw error
+  }
+  
+  console.log('🔍 Datos recibidos en getProjects:', data);
+  console.log('🔍 Campos del primer proyecto:', data && data.length > 0 ? Object.keys(data[0]) : 'No hay proyectos');
+  
   return data
 }
 

@@ -104,10 +104,13 @@ function AdminDashboard() {
 
             <ul className="list-none flex gap-3 md:p-8">
                 <Shortcut
-                    name={"PROYECTOS"}
-                    toUrl={"/admin/Manage/Proyectos"}
+                    name="PROYECTOS"
+                    toUrl="/admin/manage/proyectos"
                 />
-                <Shortcut name={"EQUIPO"} toUrl={"/admin/Manage/Equipo"} />
+                <Shortcut 
+                    name="EQUIPO" 
+                    toUrl="/admin/manage/equipo" 
+                />
             </ul>
             {/* --------------------------------------------- */}
 

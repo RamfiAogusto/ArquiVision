@@ -8,10 +8,13 @@ function QuickActions() {
             data-v0-t="card"
         >
             <div className="flex-col space-y-1.5 p-6 flex items-center justify-between">
-                <div className="text-sm font-medium">Acciones rapidas</div>
+                <div className="text-sm font-medium">Acciones rápidas</div>
             </div>
             <div className="p-6 grid grid-cols-2 gap-4">
-                <button className="inline-flex items-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2 justify-start gap-2">
+                <Link 
+                    to="/admin/manage/proyectos/new"
+                    className="inline-flex items-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2 justify-start gap-2"
+                >
                     <svg
                         xmlns="http://www.w3.org/2000/svg"
                         width="24"
@@ -27,8 +30,8 @@ function QuickActions() {
                         <path d="M5 12h14"></path>
                         <path d="M12 5v14"></path>
                     </svg>
-                    New Project
-                </button>
+                    Nuevo Proyecto
+                </Link>
                 <button className="inline-flex items-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2 justify-start gap-2">
                     <svg
                         xmlns="http://www.w3.org/2000/svg"

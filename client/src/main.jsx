@@ -8,13 +8,13 @@ import Us from "./pages/Us";
 import Contacts from "./pages/Contacts";
 import Portfolio from "./pages/Portfolio";
 import ProyectDetail from "./components/PortfolioPage/ProyectDetail";
+import CreateProyect from "./components/PortfolioPage/CreateProyect";
+import EditProyect from "./components/PortfolioPage/EditProyect";
 /* --- */
 import AdminLogin from "./pages/admin/AdminLogin";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import ManageProyects from "./pages/admin/ManageProyects";
 import ManageTeam from "./pages/admin/ManageTeam";
-import AddProyect from "./pages/admin/AddProyect";
-import EditProyect from "./pages/admin/EditProyect";
 
 // Importar el ProjectProvider
 import { ProjectProvider } from './contexts/ProjectContext'
@@ -24,18 +24,18 @@ ReactDOM.createRoot(document.getElementById("root")).render(
         <ProjectProvider>
             <BrowserRouter>
                 <Routes>
-                    <Route path="/" element={<Home />}></Route>
-                    <Route path="/Servicios" element={<Services />} />
-                    <Route path="/Portafolio" element={<Portfolio />} />
-                    <Route path="/Portafolio/:id" element={<ProyectDetail />} />
-                    <Route path="/Nosotros" element={<Us />} />
-                    <Route path="/Contactos" element={<Contacts />} />
+                    <Route path="/" element={<Home />} />
+                    <Route path="/servicios" element={<Services />} />
+                    <Route path="/portafolio" element={<Portfolio />} />
+                    <Route path="/portafolio/:id" element={<ProyectDetail />} />
+                    <Route path="/nosotros" element={<Us />} />
+                    <Route path="/contactos" element={<Contacts />} />
                     {/* --------ADMIN------- */}
                     <Route path="/admin/login" element={<AdminLogin />} />
-                    <Route path="/admin/Dashboard" element={<AdminDashboard />} />
-                    <Route path="/admin/Manage/Proyectos" element={<ManageProyects />} />
-                    <Route path="/admin/Manage/Equipo"  element={<ManageTeam />} />
-                    <Route path="/admin/manage/proyectos/new"  element={<AddProyect />} />
+                    <Route path="/admin/dashboard" element={<AdminDashboard />} />
+                    <Route path="/admin/manage/proyectos" element={<ManageProyects />} />
+                    <Route path="/admin/manage/equipo" element={<ManageTeam />} />
+                    <Route path="/admin/manage/proyectos/new" element={<CreateProyect />} />
                     <Route path="/admin/manage/proyectos/edit/:id" element={<EditProyect />} />
                     <Route path="*" element={<h1>PAGE NOT FOUND</h1>} />
                 </Routes>

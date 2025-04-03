@@ -1,11 +1,12 @@
 import React from "react";
 import { Link } from "react-router-dom";
+
 function Nav() {
     return (
         <header className="sticky top-0 z-30 flex h-14 items-center mb-5 gap-4 border-b bg-background px-4 sm:static sm:h-auto sm:border-0 sm:bg-transparent sm:px-6">
             <Link
                 className="flex items-center gap-2 text-lg font-semibold sm:text-base"
-                to="/admin/Dashboard"
+                to="/admin/dashboard"
                 rel="ugc"
             >
                 <svg
@@ -25,22 +26,22 @@ function Nav() {
                     <line x1="6" x2="6" y1="2" y2="22"></line>
                     <line x1="18" x2="18" y1="2" y2="22"></line>
                 </svg>
-                <span className="sr-only">Acme Inc</span>
+                <span className="sr-only">ArquiVision Admin</span>
             </Link>
             <nav className="hidden font-medium sm:flex flex-row items-center gap-5 text-sm lg:gap-6">
-                <Link className="font-bold" to="/admin/Dashboard" rel="ugc">
+                <Link className="font-bold" to="/admin/dashboard" rel="ugc">
                     Dashboard
                 </Link>
                 <Link
                     className="text-muted-foreground"
-                    to="/admin/Manage/Proyectos"
+                    to="/admin/manage/proyectos"
                     rel="ugc"
                 >
                     Proyectos
                 </Link>
                 <Link
                     className="text-muted-foreground"
-                    to="/admin/Manage/Equipo"
+                    to="/admin/manage/equipo"
                     rel="ugc"
                 >
                     Equipo
@@ -54,7 +55,6 @@ function Nav() {
                         height="32"
                         className="rounded-full border"
                         alt="Avatar"
-                        /* style="aspect-ratio: 32 / 32; object-fit: cover;" */
                     />
                     <span className="sr-only">Toggle user menu</span>
                 </button>
