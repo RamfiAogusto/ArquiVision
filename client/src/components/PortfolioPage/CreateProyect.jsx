@@ -126,22 +126,34 @@ const CreateProyect = () => {
         try {
             console.log("Creando proyecto con datos:", formData);
             
-            // Primero crear el proyecto para obtener su ID
-            const project = await addProject({
+            // Convertir attributes y links a JSON string para almacenarlos en 'metadata'
+            const metadata = {
+                attributes: attributes,
+                links: links
+            };
+
+            // Crear un objeto con solo los campos básicos que existen en la tabla projects
+            const basicProjectData = {
                 title: formData.title,
                 description: formData.description,
                 category: formData.category,
                 status: formData.status,
-                order_position: formData.order_position,
-                client: formData.client,
-                location: formData.location,
-                area: formData.area,
-                attributes: attributes,
-                links: links,
+                order_position: parseInt(formData.order_position) || 0,
                 images: [],
+                metadata: JSON.stringify(metadata), // Guardar attributes y links como JSON en un campo metadata
                 created_at: new Date().toISOString(),
                 updated_at: new Date().toISOString()
-            });
+            };
+
+            // Opcionalmente añadir campos adicionales si están configurados en la base de datos
+            if (formData.client) basicProjectData.client = formData.client;
+            if (formData.location) basicProjectData.location = formData.location;
+            if (formData.area) basicProjectData.area = formData.area;
+
+            console.log("Datos a enviar a Supabase:", basicProjectData);
+            
+            // Primero crear el proyecto para obtener su ID
+            const project = await addProject(basicProjectData);
 
             console.log("Proyecto creado:", project);
 

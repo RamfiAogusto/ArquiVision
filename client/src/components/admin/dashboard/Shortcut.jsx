@@ -1,29 +1,32 @@
 import React from "react";
-import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+import { Card, CardContent } from "../../ui/card";
+import { FolderKanban, Users } from "lucide-react";
 
-function Shortcut( {name, toUrl}) {
-    return (
-        <li className="lg:w-1/3 h-40">
-            <Link
-                to={toUrl}
-                className="p-2 lg:w-1/3 md:w-1/2 w-full "
-            >
-                <div className="h-full flex items-center border-gray-200 border p-4 rounded-lg hover:bg-gray-200">
-                    <img
-                        alt="team"
-                        className="w-16 h-16 bg-gray-100 object-cover object-center flex-shrink-0 rounded-full mr-4"
-                        src="https://dummyimage.com/84x84"
-                    />
-                    <div className="flex-grow">
-                        <h2 className="text-gray-900 title-font font-medium">
-                            Administrar
-                        </h2>
-                        <p className="text-gray-500">{name}</p>
-                    </div>
-                </div>
-            </Link>
-        </li>
-    );
+export default function Shortcut({ name, toUrl }) {
+  const navigate = useNavigate();
+  const isProjects = name.toLowerCase().includes("proyecto");
+
+  // Determinar icono según el tipo de acceso directo
+  const Icon = isProjects ? FolderKanban : Users;
+  
+  return (
+    <Card 
+      className="flex-1 cursor-pointer hover:shadow-md transition-shadow"
+      onClick={() => navigate(toUrl)}
+    >
+      <CardContent className="p-6 flex flex-col items-center justify-center text-center">
+        <div className="w-14 h-14 rounded-full bg-blue-100 flex items-center justify-center mb-4">
+          <Icon size={24} className="text-blue-700" />
+        </div>
+        <h3 className="text-lg font-medium mb-1">{name}</h3>
+        <p className="text-sm text-muted-foreground">
+          {isProjects 
+            ? "Gestionar proyectos del portafolio" 
+            : "Administrar miembros del equipo"
+          }
+        </p>
+      </CardContent>
+    </Card>
+  );
 }
-
-export default Shortcut;

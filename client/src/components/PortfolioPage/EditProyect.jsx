@@ -57,13 +57,28 @@ const EditProyect = () => {
                     images: []
                 });
                 
-                // Cargar atributos si existen
-                if (data.attributes && Array.isArray(data.attributes)) {
+                // Parsear metadata para obtener atributos y enlaces
+                let parsedMetadata = {};
+                try {
+                    if (data.metadata) {
+                        parsedMetadata = JSON.parse(data.metadata);
+                    }
+                } catch (parseErr) {
+                    console.error("Error al parsear metadata:", parseErr);
+                    parsedMetadata = {};
+                }
+                
+                // Cargar atributos desde metadata o desde el campo antiguo si existe
+                if (parsedMetadata.attributes && Array.isArray(parsedMetadata.attributes)) {
+                    setAttributes(parsedMetadata.attributes);
+                } else if (data.attributes && Array.isArray(data.attributes)) {
                     setAttributes(data.attributes);
                 }
                 
-                // Cargar enlaces si existen
-                if (data.links && Array.isArray(data.links)) {
+                // Cargar enlaces desde metadata o desde el campo antiguo si existe
+                if (parsedMetadata.links && Array.isArray(parsedMetadata.links)) {
+                    setLinks(parsedMetadata.links);
+                } else if (data.links && Array.isArray(data.links)) {
                     setLinks(data.links);
                 }
                 
@@ -213,13 +228,15 @@ const EditProyect = () => {
                     description: formData.description,
                     category: formData.category,
                     status: formData.status,
-                    order_position: formData.order_position,
+                    order_position: parseInt(formData.order_position) || 0,
                     client: formData.client,
                     location: formData.location,
                     area: formData.area,
                     images: imageUrls,
-                    attributes: attributes,
-                    links: links,
+                    metadata: JSON.stringify({
+                        attributes: attributes,
+                        links: links
+                    }),
                     updated_at: new Date().toISOString()
                 })
                 .eq('id', id);
