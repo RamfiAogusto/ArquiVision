@@ -1,4 +1,5 @@
 import React, { createContext, useState, useContext, useEffect } from "react";
+import { getProjects, reorderProjects, deleteProject as deleteProjectFromSupabase } from "../lib/supabase";
 
 // Crear el contexto
 const ProjectContext = createContext();
@@ -50,18 +51,12 @@ export function ProjectProvider({ children }) {
                     return;
                 } catch (err) {
                     console.error("Error al parsear caché:", err);
-                    // Continuar con la carga desde API
+                    // Continuar con la carga desde Supabase
                 }
             }
             
-            // Si no hay caché o hubo error, cargar desde la API
-            const response = await fetch("http://localhost:8080/projects");
-            
-            if (!response.ok) {
-                throw new Error("Error al obtener proyectos");
-            }
-            
-            const data = await response.json();
+            // Si no hay caché o hubo error, cargar desde Supabase
+            const data = await getProjects();
             
             // Ordenar los proyectos
             const sortedProjects = sortProjectsByOrderPosition(data);
@@ -81,13 +76,7 @@ export function ProjectProvider({ children }) {
     // Actualizar en segundo plano sin mostrar indicador de carga
     const refreshProjectsInBackground = async () => {
         try {
-            const response = await fetch("http://localhost:8080/projects");
-            
-            if (!response.ok) {
-                throw new Error("Error al actualizar proyectos");
-            }
-            
-            const data = await response.json();
+            const data = await getProjects();
             const sortedProjects = sortProjectsByOrderPosition(data);
             
             setProjects(sortedProjects);
@@ -115,42 +104,22 @@ export function ProjectProvider({ children }) {
             // Actualizar caché
             sessionStorage.setItem('cachedProjects', JSON.stringify(updatedProjects));
             
-            // Preparar datos para enviar al servidor (solo id y order_position)
+            // Preparar datos para enviar a Supabase (solo id y order_position)
             const orderData = updatedProjects.map((p, index) => ({
                 id: p.id,
                 order_position: index
             }));
 
-            console.log("Enviando datos de orden al servidor:", orderData);
+            console.log("Enviando datos de orden a Supabase:", orderData);
             
-            // Enviar los cambios al servidor
-            const response = await fetch("http://localhost:8080/projects/reorder", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify(orderData)
-            });
+            // Enviar los cambios a Supabase
+            await reorderProjects(orderData);
             
-            if (!response.ok) {
-                const errorText = await response.text();
-                let errorMessage;
-                try {
-                    const errorData = JSON.parse(errorText);
-                    errorMessage = errorData.error || response.statusText;
-                } catch (e) {
-                    errorMessage = errorText || response.statusText;
-                }
-                throw new Error(errorMessage);
-            }
-            
-            console.log("Orden actualizado exitosamente en el servidor");
+            console.log("Orden actualizado exitosamente en Supabase");
             return true;
             
         } catch (error) {
             console.error("Error al actualizar el orden:", error);
-            // No recargar proyectos inmediatamente para evitar perder la actualización de la UI
-            // El usuario puede refrescar manualmente o la próxima carga lo recuperará
             return false;
         }
     };
@@ -158,13 +127,7 @@ export function ProjectProvider({ children }) {
     // Función para eliminar un proyecto
     const deleteProject = async (projectId) => {
         try {
-            const response = await fetch(`http://localhost:8080/projects/${projectId}`, {
-                method: "DELETE",
-            });
-            
-            if (!response.ok) {
-                throw new Error("Error al eliminar el proyecto");
-            }
+            await deleteProjectFromSupabase(projectId);
             
             // Actualizar el estado
             const updatedProjects = projects.filter(p => p.id !== projectId);

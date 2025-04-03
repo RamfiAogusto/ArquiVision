@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, Link, useParams } from "react-router-dom";
+import { getProjectById, updateProject, uploadFile, deleteFile } from "../../lib/supabase";
 
 function EditProject() {
     const { id } = useParams();
@@ -13,6 +14,7 @@ function EditProject() {
     const [images, setImages] = useState([]);
     const [previewUrls, setPreviewUrls] = useState([]);
     const [currentImages, setCurrentImages] = useState([]);
+    const [loading, setLoading] = useState(false);
 
     // Valores permitidos para el ENUM intention
     const intentionOptions = [
@@ -26,13 +28,15 @@ function EditProject() {
     useEffect(() => {
         const fetchProject = async () => {
             try {
-                const response = await fetch(`http://localhost:8080/projects/${id}`);
-                const data = await response.json();
+                const data = await getProjectById(id);
+                if (!data) {
+                    throw new Error("Proyecto no encontrado");
+                }
                 
                 setName(data.name);
                 setDescription(data.description);
                 setLocation(data.location);
-                setSize(data.size.toString());
+                setSize(data.size?.toString() || "");
                 setIntention(data.intention);
                 setClient(data.client);
                 setCurrentImages(data.images || []);
@@ -44,7 +48,7 @@ function EditProject() {
         };
 
         fetchProject();
-    }, [id]);
+    }, [id, navigate]);
 
     const handleImageChange = (e) => {
         const files = Array.from(e.target.files);
@@ -57,39 +61,52 @@ function EditProject() {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        const formData = new FormData();
+        setLoading(true);
         
-        // Agregar datos del proyecto
-        formData.append('name', name);
-        formData.append('description', description);
-        formData.append('location', location);
-        formData.append('size', size);
-        formData.append('intention', intention);
-        formData.append('client', client);
-        formData.append('currentImages', JSON.stringify(currentImages));
-        
-        // Agregar imágenes nuevas
-        images.forEach((image) => {
-            formData.append('images', image);
-        });
-
         try {
-            const response = await fetch(`http://localhost:8080/projects/${id}`, {
-                method: "PUT",
-                body: formData,
+            // Subir nuevas imágenes
+            const uploadPromises = images.map(async (image) => {
+                const path = `projects/${id}/${Date.now()}-${image.name}`;
+                await uploadFile(image, path);
+                return path;
             });
+            
+            const newImagePaths = await Promise.all(uploadPromises);
+            
+            // Actualizar el proyecto
+            const projectData = {
+                name,
+                description,
+                location,
+                size: parseFloat(size),
+                intention,
+                client,
+                images: [...currentImages, ...newImagePaths]
+            };
 
-            const data = await response.json();
-
-            if (!response.ok) {
-                throw new Error(data.error || "Error updating project");
-            }
-
-            console.log("Proyecto actualizado exitosamente:", data);
+            await updateProject(id, projectData);
             navigate("/admin/manage/proyectos");
         } catch (error) {
             console.error("Error detallado:", error);
             alert(`Error: ${error.message}`);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleRemoveImage = async (index, imageUrl) => {
+        try {
+            // Si la imagen está en Supabase Storage, eliminarla
+            if (imageUrl.includes('storage.googleapis.com')) {
+                const path = imageUrl.split('/').slice(-2).join('/');
+                await deleteFile(path);
+            }
+            
+            setCurrentImages(currentImages.filter((_, i) => i !== index));
+            setPreviewUrls(previewUrls.filter((_, i) => i !== index));
+        } catch (error) {
+            console.error("Error al eliminar la imagen:", error);
+            alert("Error al eliminar la imagen");
         }
     };
 
@@ -186,10 +203,7 @@ function EditProject() {
                                 />
                                 <button
                                     type="button"
-                                    onClick={() => {
-                                        setCurrentImages(currentImages.filter((_, i) => i !== index));
-                                        setPreviewUrls(previewUrls.filter((_, i) => i !== index));
-                                    }}
+                                    onClick={() => handleRemoveImage(index, url)}
                                     className="absolute top-0 right-0 bg-red-500 text-white rounded-full p-1 text-sm"
                                 >
                                     ×
@@ -216,9 +230,10 @@ function EditProject() {
                     </Link>
                     <button
                         type="submit"
-                        className="px-4 py-2 bg-blue-600 text-white rounded"
+                        disabled={loading}
+                        className={`px-4 py-2 text-white rounded ${loading ? 'bg-blue-400' : 'bg-blue-600 hover:bg-blue-700'}`}
                     >
-                        Guardar Cambios
+                        {loading ? 'Guardando...' : 'Guardar Cambios'}
                     </button>
                 </div>
             </form>

@@ -1,63 +1,46 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import { getProjectById } from "../../lib/supabase";
+import { useProjects } from "../../contexts/ProjectContext";
 
 function ProyectDetail() {
-    const [proyect, setProyect] = useState({});
+    const [proyect, setProyect] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const { id } = useParams();
     const navigate = useNavigate();
+    const { projects } = useProjects();
     
     useEffect(() => {
-        // Primero intentar obtener los datos de sessionStorage
-        const cachedProjects = sessionStorage.getItem('cachedProjects');
-        
-        if (cachedProjects) {
+        const loadProject = async () => {
             try {
-                const parsedProjects = JSON.parse(cachedProjects);
-                const foundProject = parsedProjects.find(p => p.id === id);
+                setLoading(true);
+                setError(null);
                 
-                if (foundProject) {
-                    console.log("Proyecto encontrado en caché:", foundProject);
-                    setProyect(foundProject);
+                // Primero buscar en el contexto
+                const contextProject = projects.find(p => p.id === id);
+                if (contextProject) {
+                    console.log("Proyecto encontrado en el contexto:", contextProject);
+                    setProyect(contextProject);
                     setLoading(false);
-                    return; // Salir temprano si encontramos el proyecto en la caché
+                    return;
                 }
-            } catch (err) {
-                console.error("Error al parsear proyectos en caché:", err);
-                // Continuar con la solicitud a la API si hay error al parsear
-            }
-        }
-        
-        // Si no encontramos el proyecto en caché, intentar con la API
-        console.log("Intentando obtener el proyecto desde la API...");
-        fetch(`http://localhost:8080/projects/${id}`, {
-            method: "GET",
-            headers: {
-                "Content-Type": "application/json",
-            },
-        })
-            .then((response) => {
-                if (!response.ok) {
-                    throw new Error(`Error ${response.status}: ${response.statusText}`);
-                }
-                return response.json();
-            })
-            .then((data) => {
-                if (data.error) {
-                    throw new Error(data.error);
-                }
+                
+                // Si no está en el contexto, buscar en Supabase
+                console.log("Buscando proyecto en Supabase...");
+                const data = await getProjectById(id);
                 setProyect(data);
-                console.log("Datos del proyecto desde API:", data);
-            })
-            .catch((err) => {
+                console.log("Datos del proyecto desde Supabase:", data);
+            } catch (err) {
                 console.error("Error al cargar el proyecto:", err);
                 setError(`No se pudo cargar el proyecto: ${err.message}`);
-            })
-            .finally(() => {
+            } finally {
                 setLoading(false);
-            });
-    }, [id]);
+            }
+        };
+        
+        loadProject();
+    }, [id, projects]);
 
     // Función para volver a la página anterior
     const handleVolver = () => {
@@ -90,7 +73,7 @@ function ProyectDetail() {
     }
 
     // Si no hay datos del proyecto
-    if (!proyect || Object.keys(proyect).length === 0) {
+    if (!proyect) {
         return (
             <div className="container mx-auto px-5 py-24 flex flex-col justify-center items-center">
                 <p className="text-xl text-red-600 mb-4">No se encontró información del proyecto</p>
