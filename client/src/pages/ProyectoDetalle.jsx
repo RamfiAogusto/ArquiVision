@@ -28,6 +28,7 @@ const ProyectoDetalle = () => {
     
     // Estados para la interfaz mejorada
     const [imagenActual, setImagenActual] = useState(0);
+    const [imagenesCargadas, setImagenesCargadas] = useState([]);
     const [fullscreenOpen, setFullscreenOpen] = useState(false);
     const [shareMenuOpen, setShareMenuOpen] = useState(false);
     const [atributos, setAtributos] = useState([]);
@@ -39,6 +40,18 @@ const ProyectoDetalle = () => {
     const [imgSelected, setImgSelected] = useState(null);
 
     useEffect(() => {
+        // Limpiar estados al cambiar de proyecto
+        setImagenActual(0);
+        setImagenesCargadas([]);
+        setFullscreenOpen(false);
+        setShareMenuOpen(false);
+        setAtributos([]);
+        setEnlaces([]);
+        setProyectoAnterior(null);
+        setProyectoSiguiente(null);
+        setImgModal(false);
+        setImgSelected(null);
+
         // Intentar obtener la ruta referente de sessionStorage
         const savedReferrer = sessionStorage.getItem('projectReferrer');
         if (savedReferrer) {
@@ -57,7 +70,7 @@ const ProyectoDetalle = () => {
             const contextProject = projects.find(p => p.id === id);
             if (contextProject) {
                 console.log("Proyecto encontrado en el contexto:", contextProject);
-                procesarProyecto(contextProject, projects);
+                await procesarProyecto(contextProject, projects);
                 return;
             }
             
@@ -77,7 +90,7 @@ const ProyectoDetalle = () => {
             }
             
             // Procesar el proyecto obtenido de Supabase
-            procesarProyecto(data, [data]);
+            await procesarProyecto(data, [data]);
         } catch (error) {
             console.error("Error general al cargar el proyecto:", error);
             setError("No se pudo cargar la información del proyecto");
@@ -86,8 +99,30 @@ const ProyectoDetalle = () => {
     };
 
     // Función para procesar los datos del proyecto y preparar los datos adicionales
-    const procesarProyecto = (proyecto, todosProyectos) => {
+    const procesarProyecto = async (proyecto, todosProyectos) => {
         setProyecto(proyecto);
+        
+        // Cargar imágenes
+        if (proyecto.images && proyecto.images.length > 0) {
+            const imagenesPromesas = proyecto.images.map(async (imagen) => {
+                try {
+                    if (imagen.startsWith('http')) {
+                        return imagen;
+                    } else {
+                        const { data } = await supabase.storage
+                            .from('projects')
+                            .getPublicUrl(imagen);
+                        return data.publicUrl;
+                    }
+                } catch (error) {
+                    console.error("Error al cargar imagen:", error);
+                    return null;
+                }
+            });
+
+            const imagenesUrls = await Promise.all(imagenesPromesas);
+            setImagenesCargadas(imagenesUrls.filter(url => url !== null));
+        }
         
         // Procesar metadatos si existen
         if (proyecto.metadata) {
@@ -164,14 +199,24 @@ const ProyectoDetalle = () => {
         }
     };
 
+    // Función para navegar entre proyectos
+    const navegarProyecto = (direccion) => {
+        if (!proyectoAnterior && !proyectoSiguiente) return;
+        
+        const proyectoDestino = direccion === "anterior" ? proyectoAnterior : proyectoSiguiente;
+        if (proyectoDestino) {
+            navigate(`/Portafolio/${proyectoDestino.id}`);
+        }
+    };
+
     // Función para navegar entre imágenes
     const navegarImagen = (direccion) => {
-        if (!proyecto || !proyecto.images || proyecto.images.length <= 1) return;
+        if (!imagenesCargadas || imagenesCargadas.length <= 1) return;
         
         if (direccion === "anterior") {
-            setImagenActual(prev => (prev === 0 ? proyecto.images.length - 1 : prev - 1));
+            setImagenActual(prev => (prev === 0 ? imagenesCargadas.length - 1 : prev - 1));
         } else {
-            setImagenActual(prev => (prev === proyecto.images.length - 1 ? 0 : prev + 1));
+            setImagenActual(prev => (prev === imagenesCargadas.length - 1 ? 0 : prev + 1));
         }
     };
 
@@ -206,8 +251,8 @@ const ProyectoDetalle = () => {
     const urlActual = window.location.href;
 
     // Obtener la imagen actual o imagen por defecto
-    const imageUrl = proyecto.images && proyecto.images.length > 0 
-        ? proyecto.images[imagenActual] 
+    const imageUrl = imagenesCargadas && imagenesCargadas.length > 0 
+        ? imagenesCargadas[imagenActual] 
         : "https://dummyimage.com/600x400";
 
     // Extraer el área desde metadatos si está disponible
@@ -231,7 +276,7 @@ const ProyectoDetalle = () => {
                 {/* Carrusel de imágenes */}
                 <section className="relative w-full h-[50vh] md:h-[70vh] mb-8 overflow-hidden rounded-xl">
                     <div className="relative w-full h-full">
-                        {proyecto.images && proyecto.images.length > 0 ? (
+                        {imagenesCargadas && imagenesCargadas.length > 0 ? (
                             <>
                                 <img
                                     src={imageUrl}
@@ -256,7 +301,7 @@ const ProyectoDetalle = () => {
                                 />
                                 
                                 {/* Controles de navegación - Solo si hay más de una imagen */}
-                                {proyecto.images.length > 1 && (
+                                {imagenesCargadas.length > 1 && (
                                     <>
                                         <button
                                             onClick={() => navegarImagen("anterior")}
@@ -276,7 +321,7 @@ const ProyectoDetalle = () => {
 
                                         {/* Indicadores de imágenes */}
                                         <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
-                                            {proyecto.images.map((_, index) => (
+                                            {imagenesCargadas.map((_, index) => (
                                                 <button
                                                     key={index}
                                                     onClick={() => setImagenActual(index)}
@@ -484,7 +529,10 @@ const ProyectoDetalle = () => {
                     <section className="mt-16 mb-12 border-t border-neutral-200 pt-8">
                         <div className="flex justify-between">
                             {proyectoAnterior ? (
-                                <Link to={`/Portafolio/${proyectoAnterior.id}`} className="flex items-center gap-2 group">
+                                <button
+                                    onClick={() => navegarProyecto("anterior")}
+                                    className="flex items-center gap-2 group"
+                                >
                                     <ChevronLeft className="h-5 w-5 text-neutral-500 group-hover:text-black transition-colors" />
                                     <div>
                                         <p className="text-sm text-neutral-500">Proyecto anterior</p>
@@ -492,13 +540,16 @@ const ProyectoDetalle = () => {
                                             {proyectoAnterior.titulo}
                                         </p>
                                     </div>
-                                </Link>
+                                </button>
                             ) : (
                                 <div></div>
                             )}
 
                             {proyectoSiguiente ? (
-                                <Link to={`/Portafolio/${proyectoSiguiente.id}`} className="flex items-center gap-2 text-right group">
+                                <button
+                                    onClick={() => navegarProyecto("siguiente")}
+                                    className="flex items-center gap-2 text-right group"
+                                >
                                     <div>
                                         <p className="text-sm text-neutral-500">Proyecto siguiente</p>
                                         <p className="font-medium group-hover:text-neutral-800 transition-colors">
@@ -506,7 +557,7 @@ const ProyectoDetalle = () => {
                                         </p>
                                     </div>
                                     <ChevronRight className="h-5 w-5 text-neutral-500 group-hover:text-black transition-colors" />
-                                </Link>
+                                </button>
                             ) : (
                                 <div></div>
                             )}
