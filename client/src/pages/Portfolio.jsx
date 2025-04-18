@@ -39,6 +39,13 @@ const Portfolio = () => {
             return;
         }
         
+        // Si todos los filtros están en "todos", mostrar todos los proyectos
+        if (Object.values(filters).every(value => value === "todos")) {
+            console.log("Portfolio - Todos los filtros están en 'todos', mostrando todos los proyectos");
+            setFilteredProjects([]);
+            return;
+        }
+        
         // Filtrar los proyectos según los criterios seleccionados
         let filtered = [...projects];
         console.log("Portfolio - Filtros actuales:", filters);
@@ -113,9 +120,7 @@ const Portfolio = () => {
     }
     
     // Determinar qué lista de proyectos usar
-    const displayProjects = filteredProjects.length > 0 || Object.values(filters).some(value => value !== "todos") 
-        ? filteredProjects 
-        : projects;
+    const displayProjects = filteredProjects.length > 0 ? filteredProjects : projects;
 
     console.log("Portfolio - displayProjects:", displayProjects);
     console.log("Portfolio - Vamos a mostrar:", {
