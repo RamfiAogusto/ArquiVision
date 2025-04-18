@@ -130,7 +130,7 @@ function Footer() {
                     <p className="text-gray-500 text-sm text-center sm:text-left">
                         © 2024 Ramfi Aogusto —
                         <a
-                            href="https://twitter.com/knyttneve"
+                            href="#"
                             rel="noopener noreferrer"
                             className="text-gray-600 ml-1"
                             target="_blank"

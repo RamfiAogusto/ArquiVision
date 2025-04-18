@@ -37,7 +37,7 @@ export default function ProyectsTable() {
         id: project.id,
         title: usesTitle ? project.title : (usesName ? project.name : 'Sin título'),
         description: project.description || '',
-        category: project.category || 'Sin categoría',
+        category: project.intention || 'Sin categoría',
         status: project.status || 'inactive',
         images: project.images || [],
         order_position: project.order_position || 0,
@@ -216,7 +216,9 @@ export default function ProyectsTable() {
                   ) : 'Sin descripción'}
                   </TableCell>
                   <TableCell>
-                    <Badge variant="secondary">{project.category}</Badge>
+                    <Badge variant="secondary" className="capitalize">
+                      {project.category.toLowerCase()}
+                    </Badge>
                   </TableCell>
                   <TableCell>
                     <Badge

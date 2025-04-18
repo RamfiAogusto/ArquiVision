@@ -8,11 +8,11 @@ ChartJS.register(ArcElement, Tooltip, Legend);
 
 // Colores para el gráfico
 const CHART_COLORS = {
-  Residencial: '#1E40AF',  // azul oscuro
-  Comercial: '#60A5FA',    // azul medio
-  Industrial: '#93C5FD',   // azul claro
-  Urbano: '#3B82F6',       // azul principal
-  Concepto: '#1D4ED8',     // azul intenso
+  RESIDENCIAL: '#1E40AF',  // azul oscuro
+  COMERCIAL: '#60A5FA',    // azul medio
+  INDUSTRIAL: '#93C5FD',   // azul claro
+  INSTITUCIONAL: '#3B82F6',       // azul principal
+  RECREACIONAL: '#1D4ED8',     // azul intenso
   'Sin categoría': '#CBD5E1' // gris
 };
 
@@ -39,7 +39,7 @@ export default function ProjectsChart({ projects = [] }) {
 
     // Contar proyectos por categoría
     projects.forEach(project => {
-      const category = project.category || 'Sin categoría';
+      const category = project.intention || 'Sin categoría';
       categories[category] = (categories[category] || 0) + 1;
     });
 
