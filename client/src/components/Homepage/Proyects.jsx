@@ -25,32 +25,19 @@ const Proyects = () => {
     if (loading) return <div className="py-16 text-center">Cargando proyectos...</div>;
     if (error) return <div className="py-16 text-center">Error al cargar proyectos</div>;
     
-    if (!featuredProjects || featuredProjects.length === 0) {
-        console.log("Proyects - No hay proyectos destacados, mostrando todos los proyectos");
-        return (
-            <div className="py-16">
-                <div className="container mx-auto px-4">
-                    <h2 className="text-3xl font-bold mb-8 text-center">Nuestros Proyectos</h2>
-                    <div className="space-y-12">
-                        {projects?.map((project, index) => (
-                            index % 2 === 0 ? (
-                                <Proyect key={project.id} proyecto={project} />
-                            ) : (
-                                <ProyectL key={project.id} proyecto={project} />
-                            )
-                        ))}
-                    </div>
-                </div>
-            </div>
-        );
+    // Tomar solo los dos primeros proyectos
+    const displayProjects = projects?.slice(0, 2) || [];
+    
+    if (!displayProjects || displayProjects.length === 0) {
+        return <div className="py-16 text-center">No hay proyectos disponibles</div>;
     }
     
     return (
         <div className="py-16">
             <div className="container mx-auto px-4">
-                <h2 className="text-3xl font-bold mb-8 text-center">Proyectos Destacados</h2>
+                <h2 className="text-3xl font-bold mb-8 text-center">Nuestros Proyectos</h2>
                 <div className="space-y-12">
-                    {featuredProjects.map((project, index) => (
+                    {displayProjects.map((project, index) => (
                         index % 2 === 0 ? (
                             <Proyect key={project.id} proyecto={project} />
                         ) : (
