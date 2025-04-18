@@ -17,6 +17,15 @@ const Proyect = ({ proyecto }) => {
         description: "Este es un proyecto de ejemplo para mostrar cuando no hay datos reales.",
         images: ["https://dummyimage.com/1200x700"]
     };
+
+    // Extraer el área del metadata
+    let area = null;
+    try {
+        const metadata = JSON.parse(displayProject.metadata || '{}');
+        area = metadata.area;
+    } catch (error) {
+        console.error("Error al parsear metadata:", error);
+    }
     
     // Obtener la primera imagen del array images si existe
     const imageUrl = displayProject.images && displayProject.images.length > 0 
@@ -56,7 +65,7 @@ const Proyect = ({ proyecto }) => {
                                 Tamaño en metros cuadrados
                             </span>
                             <span className="ml-auto text-gray-900">
-                                {displayProject.size}
+                                {area ? `${area} m²` : 'm²'}
                             </span>
                         </div>
                         <div className="flex border-t border-b mb-6 border-gray-200 py-2">
