@@ -76,7 +76,7 @@ const EditProyect = () => {
                 setFormData({
                     title: data.title || "",
                     description: data.description || "",
-                    category: data.category || "",
+                    category: data.intention || "",
                     status: data.status || "active",
                     order_position: data.order_position || 0,
                     client: data.client || "",

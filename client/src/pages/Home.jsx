@@ -1,24 +1,32 @@
-import React from "react";
-import Hero from "../components/Homepage/Hero";
-import Services from "../components/Homepage/Services";
-import Proyects from "../components/Homepage/Proyects";
-import MVV from "../components/Homepage/MVV";
-import Contact from "../components/Homepage/Contact";
-import Footer from "../components/Homepage/Footer";
+import React, { useEffect } from "react";
 import Nav from "../components/Nav";
+import Proyects from "../components/Homepage/Proyects";
+import Hero from "../components/Homepage/Hero";
+import Footer from "../components/Homepage/Footer";
+import MVV from "../components/Homepage/MVV";
+import ServicesHome from "../components/Homepage/Services";
+import Contact from "../components/Homepage/Contact";
+import { useLocation } from "react-router-dom";
 
-function Home() {
+const Home = () => {
+    const location = useLocation();
+    
+    // Guardar la ubicación actual como referencia
+    useEffect(() => {
+        sessionStorage.setItem('projectReferrer', location.pathname);
+    }, [location]);
+    
     return (
         <div>
             <Nav />
             <Hero />
-            <Services />
             <Proyects />
             <MVV />
+            <ServicesHome />
             <Contact />
             <Footer />
         </div>
     );
-}
+};
 
 export default Home;

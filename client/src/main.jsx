@@ -7,6 +7,7 @@ import Services from "./pages/Services";
 import Us from "./pages/Us";
 import Contacts from "./pages/Contacts";
 import Portfolio from "./pages/Portfolio";
+import ProyectoDetalle from "./pages/ProyectoDetalle";
 import ProyectDetail from "./components/PortfolioPage/ProyectDetail";
 import CreateProyect from "./components/PortfolioPage/CreateProyect";
 import EditProyect from "./components/PortfolioPage/EditProyect";
@@ -27,7 +28,7 @@ ReactDOM.createRoot(document.getElementById("root")).render(
                     <Route path="/" element={<Home />} />
                     <Route path="/servicios" element={<Services />} />
                     <Route path="/portafolio" element={<Portfolio />} />
-                    <Route path="/portafolio/:id" element={<ProyectDetail />} />
+                    <Route path="/portafolio/:id" element={<ProyectoDetalle />} />
                     <Route path="/nosotros" element={<Us />} />
                     <Route path="/contactos" element={<Contacts />} />
                     {/* --------ADMIN------- */}

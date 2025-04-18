@@ -1,21 +1,27 @@
 import React from "react";
 import { Link } from "react-router-dom";
 
-const Proyect = ({ project }) => {
+const Proyect = ({ proyecto }) => {
+    console.log("Proyect - proyecto recibido:", proyecto);
+
+    // Verificar si proyecto es undefined o null
+    if (!proyecto) {
+        console.error("Proyect - Error: proyecto es undefined o null");
+        return null;
+    }
+
     // Si no hay proyecto, mostrar datos de ejemplo
-    const displayProject = project || {
-        name: "Proyecto Destacado",
-        description: "Información del proyecto no disponible. Visite nuestra página de portafolio para ver proyectos actualizados.",
-        location: "Ubicación no disponible",
-        size: "N/A",
-        intention: "No especificada",
-        images: []
+    const displayProject = proyecto || {
+        id: "ejemplo",
+        name: "Proyecto Ejemplo",
+        description: "Este es un proyecto de ejemplo para mostrar cuando no hay datos reales.",
+        images: ["https://dummyimage.com/1200x700"]
     };
     
     // Obtener la primera imagen del array images si existe
     const imageUrl = displayProject.images && displayProject.images.length > 0 
         ? displayProject.images[0] 
-        : "https://dummyimage.com/400x400";
+        : "https://dummyimage.com/1200x700";
     
     return (
         <section className="text-gray-600 body-font overflow-hidden">
@@ -60,7 +66,7 @@ const Proyect = ({ project }) => {
                             </span>
                         </div>
                         <div className="flex">
-                            {project && project.id && (
+                            {proyecto && proyecto.id && (
                                 <Link 
                                     to={`/Portafolio/${displayProject.id}`}
                                     className="flex ml-auto items-center text-white bg-indigo-500 border-0 py-2 px-6 focus:outline-none hover:bg-indigo-600 rounded"
@@ -82,7 +88,7 @@ const Proyect = ({ project }) => {
                                 </Link>
                             )}
                             
-                            {!project && (
+                            {!proyecto && (
                                 <Link 
                                     to="/Portafolio"
                                     className="flex ml-auto items-center text-white bg-indigo-500 border-0 py-2 px-6 focus:outline-none hover:bg-indigo-600 rounded"
